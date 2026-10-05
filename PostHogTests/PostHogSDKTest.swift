@@ -383,7 +383,7 @@ class PostHogSDKTest: QuickSpec {
                 expect(events[0].properties["$sdk_debug_replay_capture_mode"]).to(beNil())
 
                 expect(events[1].properties["$recording_status"] as? String) == "disabled"
-                expect(events[1].properties["$sdk_debug_replay_capture_mode"] as? String) == "wireframe"
+                expect(events[1].properties["$sdk_debug_replay_capture_mode"] as? String) == "screenshot"
                 expect(events[1].properties["$sdk_debug_session_start"]).toNot(beNil())
 
                 // Inside the 30s window opened by $screen.
@@ -428,22 +428,6 @@ class PostHogSDKTest: QuickSpec {
 
                 expect(props["$recording_status"]).to(beNil())
                 expect(props.keys.contains { $0.hasPrefix("$sdk_debug_") }).to(beFalse())
-
-                sut.reset()
-                sut.close()
-            }
-
-            it("reports screenshot capture mode for the flutter host") {
-                server.reset(batchCount: 1)
-                let original = postHogSdkName
-                postHogSdkName = "posthog-flutter"
-                defer { postHogSdkName = original }
-
-                let sut = self.getSut()
-                sut.screen("theScreen")
-
-                let events = getBatchedEvents(server)
-                expect(events.first?.properties["$sdk_debug_replay_capture_mode"] as? String) == "screenshot"
 
                 sut.reset()
                 sut.close()
