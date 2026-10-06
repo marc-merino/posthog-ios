@@ -489,12 +489,11 @@ class PostHogSDKTest: QuickSpec {
             let sut = self.getSut()
             sut.close()
 
-            var called = false
-            sut.reloadFeatureFlags {
-                called = true
-            }
+            var result: PostHogFeatureFlagsLoaded?
+            sut.reloadFeatureFlags { result = $0 }
 
-            expect(called).to(beTrue())
+            expect(result?.errorsLoading) == true
+            expect(result?.flags).to(beEmpty())
         }
 
         it("captures a screen event") {
@@ -598,7 +597,7 @@ class PostHogSDKTest: QuickSpec {
             let group = DispatchGroup()
             group.enter()
 
-            sut.reloadFeatureFlags {
+            sut.reloadFeatureFlags { _ in
                 group.leave()
             }
 
@@ -1264,7 +1263,7 @@ class PostHogSDKTest: QuickSpec {
             _ = sut.getFeatureFlag("some_key")
 
             let reloaded = XCTestExpectation(description: "second flag lookup completed")
-            sut.reloadFeatureFlags {
+            sut.reloadFeatureFlags { _ in
                 _ = sut.getFeatureFlag("some_key")
                 reloaded.fulfill()
             }
@@ -1289,7 +1288,7 @@ class PostHogSDKTest: QuickSpec {
             // Change the mock server to return a different value for the same key
             server.disabledFlag = true
 
-            sut.reloadFeatureFlags {
+            sut.reloadFeatureFlags { _ in
                 // Second call gets a true value
                 _ = sut.getFeatureFlag("disabled-flag")
                 sut.capture("force_batch_flush")
